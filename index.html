@@ -46,8 +46,8 @@
     }
 
     /* ============================
-       PRINT FORMAT A4
-       ============================ */
+      PRINT FORMAT A4
+      ============================ */
     @media print {
 
       @page {
@@ -140,20 +140,18 @@
         <p class="muted">Biaya tetap harian fix: <b>Rp 77.500</b></p>
 
         <label>Pendapatan Bruto (Rp)</label>
-        <input id="bruto" type="number">
+        <input id="bruto" type="number" value="0">
 
         <label>Biaya Bahan (Rp)</label>
-        <input id="bahan" type="number">
+        <input id="bahan" type="number" value="0">
 
         <div style="display:flex;gap:8px;margin-top:14px">
-          <button id="calcBtn" class="btn" style="flex:1">Hitung</button>
+          <button id="calcBtn" class="btn" style="flex:1">Hitung & Simpan Transaksi</button>
           <button id="resetBtn" class="btn ghost" style="flex:1">Reset</button>
         </div>
 
-        <!-- QR otomatis -->
         <div id="qrBox" class="resultBox" style="display:none;text-align:center"></div>
 
-        <!-- Ringkasan -->
         <div id="output" class="resultBox" style="display:none"></div>
       </div>
 
@@ -176,11 +174,16 @@
   </div>
 
 <script>
+  // =======================================================================
+  // ** PENTING: URL Endpoint Apps Script Anda **
+  // =======================================================================
+  const GOOGLE_SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwmnvb4vh4QTt8ipzJu2OQdybosBWl5Ugo-idI0ditj-gpRiKvr8sHAG55TwZOcY00H/exec';
+
+  const FIX_DAILY = 77500;
+
   function formatID(num){
     return 'Rp ' + Number(num).toLocaleString('id-ID');
   }
-
-  const FIX_DAILY = 77500;
 
   function nomorTransaksi(){
     const now = new Date();
@@ -189,6 +192,42 @@
     const d = now.getDate().toString().padStart(2,'0');
     const t = now.getTime().toString().slice(-4);
     return `GA-INV-${y}${m}${d}-${t}`;
+  }
+
+  // =======================================================================
+  // FUNGSI PENGIRIMAN DATA KE GOOGLE SHEET
+  // =======================================================================
+  function sendDataToSheet(trxData) {
+    // Tampilkan pesan loading di tombol
+    const calcBtn = document.getElementById("calcBtn");
+    const originalText = calcBtn.innerText;
+    calcBtn.disabled = true;
+    calcBtn.innerText = 'Mengirim data...';
+
+    fetch(GOOGLE_SHEET_ENDPOINT, {
+        method: 'POST',
+        mode: 'no-cors', // Penting untuk Apps Script agar tidak terblokir CORS
+        cache: 'no-cache',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(trxData) // Kirim objek data sebagai JSON string
+    })
+    .then(response => {
+        // Karena menggunakan 'no-cors', respons tidak bisa dibaca, 
+        // tapi kita asumsikan pengiriman berhasil
+        console.log('Data transaksi berhasil dikirim ke Google Sheet.');
+        alert('Perhitungan selesai dan data berhasil disimpan ke Google Sheet!');
+    })
+    .catch(error => {
+        console.error('Terjadi kesalahan saat mengirim data:', error);
+        alert('Perhitungan selesai, TAPI GAGAL menyimpan data ke Google Sheet. Cek konsol browser untuk detail.');
+    })
+    .finally(() => {
+        // Kembalikan tombol ke keadaan semula
+        calcBtn.disabled = false;
+        calcBtn.innerText = originalText;
+    });
   }
 
   function calcAndRender(){
@@ -200,7 +239,7 @@
     const bahan = parseFloat(document.getElementById("bahan").value || 0);
 
     if(bruto <= 0){
-      alert("Pendapatan harus diisi!");
+      alert("Pendapatan Bruto harus diisi dan lebih dari nol!");
       return;
     }
 
@@ -221,6 +260,34 @@
         saving: Math.round(laba*0.10)
       };
     }
+
+    // =======================================================================
+    // ** PENGIRIMAN DATA TRANSAKSI **
+    // =======================================================================
+    const dataToSend = {
+      trx: trx,
+      bruto: bruto,
+      bahan: bahan,
+      biayaTetap: biayaTetap,
+      totalBiaya: totalBiaya,
+      laba: laba,
+      margin: parseFloat(margin.toFixed(2)),
+    };
+
+    if (pembagian) {
+        // Gabungkan data pembagian jika ada
+        dataToSend.kom = pembagian.kom;
+        dataToSend.ahli = pembagian.ahli;
+        dataToSend.agung = pembagian.agung;
+        dataToSend.bunuy = pembagian.bunuy;
+        dataToSend.tetap = pembagian.tetap;
+        dataToSend.saving = pembagian.saving;
+    }
+    
+    // Kirim data ke Google Sheet (berjalan secara ASINKRON)
+    sendDataToSheet(dataToSend);
+    // =======================================================================
+
 
     // Tampilkan QR
     const qrData = encodeURIComponent(`TRX:${trx} | Bruto:${bruto} | Laba:${laba}`);
@@ -279,11 +346,11 @@
 
   document.getElementById("calcBtn").onclick = calcAndRender;
   document.getElementById("resetBtn").onclick = ()=>{
-    bruto.value="";
-    bahan.value="";
-    output.style.display="none";
-    detailArea.style.display="none";
-    qrBox.style.display="none";
+    document.getElementById("bruto").value="0";
+    document.getElementById("bahan").value="0";
+    document.getElementById("output").style.display="none";
+    document.getElementById("detailArea").style.display="none";
+    document.getElementById("qrBox").style.display="none";
   };
 
   document.getElementById("printBtn").onclick = ()=>window.print();
