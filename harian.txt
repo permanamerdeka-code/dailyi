@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Ghe Art Sticker — Kalkulator Usaha</title>
+
+  <style>
+    :root{
+      --bg: #f4f6f8;
+      --card: #ffffff;
+      --accent-1: #d92b2b;
+      --accent-2: #f2c200;
+      --accent-3: #0b66c3;
+      --muted: #64748b;
+      --radius: 12px;
+    }
+    *{box-sizing:border-box}
+    body{font-family: Inter, Arial, sans-serif; background:var(--bg); margin:0; color:#081028}
+    header{
+      background: linear-gradient(90deg,var(--accent-1), var(--accent-2), var(--accent-3));
+      padding:18px;
+      color:white;
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+    .logo{width:78px;height:78px;object-fit:contain;border-radius:8px;padding:6px;background:rgba(255,255,255,0.08)}
+    .brand h1{margin:0;font-size:18px}
+    .brand p{margin:6px 0 0;font-size:12px}
+    .container{max-width:980px;margin:18px auto;padding:16px}
+    .grid{display:grid;grid-template-columns:1fr 420px;gap:16px}
+    .card{background:var(--card);padding:16px;border-radius:var(--radius);box-shadow:0 8px 30px rgba(2,6,23,0.06)}
+    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}
+    input{width:100%;padding:10px;border-radius:8px;border:1px solid #e6eef8;font-size:14px}
+    .btn{background:var(--accent-3);color:white;padding:10px;border-radius:8px;border:0;font-weight:700;cursor:pointer}
+    .btn.ghost{background:#6b7280}
+    .resultBox{background:#fbfdff;padding:12px;border-radius:10px;margin-top:12px;border:1px solid #eef4ff}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #f0f4f8;text-align:left;font-size:14px}
+    footer{text-align:center;color:var(--muted);margin-top:18px;font-size:13px}
+
+    @media (max-width:950px){
+      .grid{grid-template-columns:1fr}
+      header{flex-direction:column;align-items:flex-start}
+    }
+
+    /* ============================
+       PRINT FORMAT A4
+       ============================ */
+    @media print {
+
+      @page {
+        size: A4;
+        margin: 15mm;
+      }
+
+      body{
+        background:white !important;
+        color:#000;
+        -webkit-print-color-adjust:exact;
+        print-color-adjust:exact;
+      }
+
+      .no-print,
+      input,
+      #calcBtn,
+      #resetBtn,
+      #printBtn,
+      aside.card {
+        display:none !important;
+      }
+
+      .grid{display:block !important;}
+
+      .card{
+        box-shadow:none !important;
+        border-radius:0 !important;
+      }
+
+      #output,
+      #detailArea{
+        display:block !important;
+        border:1px solid #000;
+        padding:14px;
+        background:white;
+        color:black;
+        break-inside:avoid;
+        page-break-inside:avoid;
+      }
+
+      #qrBox{
+        text-align:center;
+        margin-bottom:20px;
+      }
+
+      #qrBox img{
+        width:160px !important;
+        height:160px !important;
+      }
+
+      header{
+        background:none !important;
+        color:#000 !important;
+        display:block;
+        margin-bottom:10px;
+      }
+
+      header img.logo{width:90px !important;}
+
+      header .brand h1,
+      header .brand p{color:#000 !important;}
+
+      footer{
+        margin-top:20px;
+        color:#000 !important;
+        page-break-after:always;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+  <header>
+    <img class="logo" src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh1g3_OhZb0gQqihtvRurhtE6RbYWZqYd7X1Xr1ur0U6IKYNjupll_jvIAkLJH_p8H1HvPO-OiDxHE2Rg3F-JBzX_XIqmiPN398TipI3NbpqP14753wycGgknEhsGUeMLb2Q0X6-XjVRHW35ozdS_ErGUBXTMT_RO5yq2XJfgQAEfruB0FQvc9WZ4RCzTx5/s320/ChatGPT_Image_Nov_20__2025__05_47_53_PM-removebg-preview.png">
+    <div class="brand">
+      <h1>Ghe Art Sticker</h1>
+      <p>Powered by PT Cutting Sticker Indonesia — Jl. Raya Curug - Kosambi, Klari, Karawang</p>
+    </div>
+    <div style="margin-left:auto" class="no-print">
+      <button id="printBtn" class="btn">Print / Save PDF</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="grid">
+      <div class="card">
+        <h3>Input (sederhana)</h3>
+        <p class="muted">Biaya tetap harian fix: <b>Rp 77.500</b></p>
+
+        <label>Pendapatan Bruto (Rp)</label>
+        <input id="bruto" type="number">
+
+        <label>Biaya Bahan (Rp)</label>
+        <input id="bahan" type="number">
+
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button id="calcBtn" class="btn" style="flex:1">Hitung</button>
+          <button id="resetBtn" class="btn ghost" style="flex:1">Reset</button>
+        </div>
+
+        <!-- QR otomatis -->
+        <div id="qrBox" class="resultBox" style="display:none;text-align:center"></div>
+
+        <!-- Ringkasan -->
+        <div id="output" class="resultBox" style="display:none"></div>
+      </div>
+
+      <aside class="card">
+        <h4>Parameter</h4>
+        <table>
+          <tr><th>Biaya Tetap</th><td>Rp 77.500</td></tr>
+          <tr><th>Aturan</th><td>Bruto ≥ 150.000 → Pembagian aktif</td></tr>
+          <tr><th>Persentase</th><td>Kom 10% • Ahli 30% • Agung 20% • Bunuy 15% • Tetap 15% • Saving 10%</td></tr>
+        </table>
+      </aside>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h3>Rincian Sangat Mendetail</h3>
+      <div id="detailArea" class="resultBox" style="display:none"></div>
+    </div>
+
+    <footer>Ghe Art Sticker • PT Cutting Sticker Indonesia • HP: 0812-5766-2020</footer>
+  </div>
+
+<script>
+
+  /* ================================
+     👉 GANTI LINK INI DENGAN LINK WEB APP GOOGLE SCRIPT ANDA
+     ================================= */
+  const GSHEET_URL = "PASTE_URL_WEB_APP_KAMU_DI_SINI";
+
+  /* Kirim Data Ke Google Sheet */
+  async function kirimKeSheet(data){
+    try {
+      await fetch(GSHEET_URL, {
+        method: "POST",
+        body: JSON.stringify(data),
+        headers: { "Content-Type": "application/json" }
+      });
+    } catch (e){
+      console.log("Gagal kirim:", e);
+    }
+  }
+
+  function formatID(num){
+    return 'Rp ' + Number(num).toLocaleString('id-ID');
+  }
+
+  const FIX_DAILY = 77500;
+
+  function nomorTransaksi(){
+    const now = new Date();
+    const y = now.getFullYear();
+    const m = (now.getMonth()+1).toString().padStart(2,'0');
+    const d = now.getDate().toString().padStart(2,'0');
+    const t = now.getTime().toString().slice(-4);
+    return `GA-INV-${y}${m}${d}-${t}`;
+  }
+
+  function calcAndRender(){
+    document.getElementById("output").style.display="none";
+    document.getElementById("detailArea").style.display="none";
+    document.getElementById("qrBox").style.display="none";
+
+    const bruto = parseFloat(document.getElementById("bruto").value || 0);
+    const bahan = parseFloat(document.getElementById("bahan").value || 0);
+
+    if(bruto <= 0){
+      alert("Pendapatan harus diisi!");
+      return;
+    }
+
+    const biayaTetap = FIX_DAILY;
+    const totalBiaya = bahan + biayaTetap;
+    const laba = bruto - totalBiaya;
+    const margin = bruto>0 ? (laba/bruto)*100 : 0;
+    const trx = nomorTransaksi();
+
+    /* =============================
+       KIRIM KE GOOGLE SHEET OTOMATIS
+       ============================== */
+    kirimKeSheet({
+      trx,
+      bruto,
+      bahan,
+      biayaTetap,
+      totalBiaya,
+      laba,
+      margin: margin.toFixed(2)
+    });
+
+    // Tampilkan QR
+    const qrData = encodeURIComponent(`TRX:${trx} | Bruto:${bruto} | Laba:${laba}`);
+    const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${qrData}`;
+    document.getElementById("qrBox").innerHTML = `<img src="${qrURL}"><div>${trx}</div>`;
+    document.getElementById("qrBox").style.display="block";
+
+    // Output ringkas
+    const o = document.getElementById("output");
+    o.style.display="block";
+    o.innerHTML = `
+      <strong>Ringkasan Singkat</strong><br>
+      Nomor Transaksi: <b>${trx}</b><br><br>
+      Pendapatan Bruto: <b>${formatID(bruto)}</b><br>
+      Biaya Bahan: <b>${formatID(bahan)}</b><br>
+      Biaya Tetap: <b>${formatID(biayaTetap)}</b><br>
+      Total Biaya: <b>${formatID(totalBiaya)}</b><br><br>
+      Laba Bersih: <b>${formatID(laba)}</b><br>
+      Margin: <b>${margin.toFixed(2)}%</b><br>
+    `;
+
+    // Detail
+    const d = document.getElementById("detailArea");
+    d.style.display="block";
+
+    let html = `
+      <table>
+        <tr><td>Nomor Transaksi</td><td>${trx}</td></tr>
+        <tr><td>Pendapatan Bruto</td><td>${formatID(bruto)}</td></tr>
+        <tr><td>Biaya Bahan</td><td>${formatID(bahan)}</td></tr>
+        <tr><td>Biaya Tetap</td><td>${formatID(biayaTetap)}</td></tr>
+        <tr><td><strong>Total Biaya</strong></td><td><strong>${formatID(totalBiaya)}</strong></td></tr>
+        <tr><td><strong>Laba Bersih</strong></td><td><strong>${formatID(laba)}</strong></td></tr>
+        <tr><td>Margin Laba</td><td>${margin.toFixed(2)}%</td></tr>
+      </table><br>
+    `;
+
+    // Pembagian jika berlaku
+    if(bruto>=150000 && laba>0){
+      const pembagian = {
+        kom: Math.round(laba*0.10),
+        ahli: Math.round(laba*0.30),
+        agung: Math.round(laba*0.20),
+        bunuy: Math.round(laba*0.15),
+        tetap: Math.round(laba*0.15),
+        saving: Math.round(laba*0.10)
+      };
+
+      html += `
+        <h4>Pembagian Laba</h4>
+        <table>
+          <tr><td>Komisaris (10%)</td><td>${formatID(pembagian.kom)}</td></tr>
+          <tr><td>Tenaga Ahli (30%)</td><td>${formatID(pembagian.ahli)}</td></tr>
+          <tr><td>Dir Agung (20%)</td><td>${formatID(pembagian.agung)}</td></tr>
+          <tr><td>Dir Bunuy (15%)</td><td>${formatID(pembagian.bunuy)}</td></tr>
+          <tr><td>Kebutuhan Tetap (15%)</td><td>${formatID(pembagian.tetap)}</td></tr>
+          <tr><td>Saving (10%)</td><td>${formatID(pembagian.saving)}</td></tr>
+        </table>
+      `;
+    } else {
+      html += `<div>Pembagian tidak berlaku (bruto < 150rb atau laba ≤ 0).</div>`;
+    }
+
+    d.innerHTML = html;
+  }
+
+  document.getElementById("calcBtn").onclick = calcAndRender;
+
+  document.getElementById("resetBtn").onclick = ()=>{
+    bruto.value="";
+    bahan.value="";
+    output.style.display="none";
+    detailArea.style.display="none";
+    qrBox.style.display="none";
+  };
+
+  document.getElementById("printBtn").onclick = ()=>window.print();
+</script>
+</body>
+</html>
